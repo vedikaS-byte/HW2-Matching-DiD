@@ -266,7 +266,7 @@ love.plot(match_model, stats = "mean.diffs",
 
 **2D.Q1** Interpret the love plot in your own words:
 
-*Response:* \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_
+*Response:* The adjusted standardized mean differences are within the defined threshold in the love plot.
 
 ------------------------------------------------------------------------
 
@@ -283,8 +283,20 @@ love.plot(match_model, stats = "mean.diffs",
 
 set.seed(2412026)
 
-propensity_scores <- 
-    
+propensity_scores <- matchit(
+     # Treatment_indicator ~  Pre_treatment_covariates
+  proposed_turbine_3km ~ log_home_val_07 + p_uni_degree + log_median_inc + log_pop_denc,
+  data = match_data, 
+  method = "nearest",       # Nearest neighbor matching
+  distance = "logit", # Logit distance
+  ratio = 1,                # Match one control unit to one treatment unit (1:1 matching)
+  replace = FALSE           # Control observations are not replaced
+)
+
+# Extract matched data
+propensity_matched_data <- match.data(propensity_scores)
+
+summary(propensity_scores)
 ```
 
 ------------------------------------------------------------------------
@@ -297,14 +309,34 @@ Use `bal.tab()` to report balance before and after matching.
 
 ```{r}
 
+
+new_names_propensity <- data.frame(
+    old = c("log_home_val_07", "p_uni_degree", "log_median_inc", "log_pop_denc"),
+    new = c("Home Value (log)", "Percent University Degree",
+            "Median Income (log)", "Population Density (log)"))
+
 bal.tab(propensity_scores, 
+        var.names = new_names_propensity) 
+
+
+bal.tab(match_model, 
         var.names = new_names) 
+
+# Love plot
+love.plot(match_model, stats = "mean.diffs",
+          thresholds = c(m = 0.1),
+          var.names = new_names)
+# Love plot
+love.plot(propensity_scores, stats = "mean.diffs",
+          thresholds = c(m = 0.1),
+          var.names = new_names_propensity)
+
 
 ```
 
 **2E.Q1** Compare Mahalanobis vs propensity score matching. Which method did a better job at achieving balance?
 
-*Response:* \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_
+*Response:* The match model is better because the standardized mean differences are closer to 0 within the defined interval.
 
 ------------------------------------------------------------------------
 
@@ -314,22 +346,30 @@ Using the matched data (Mahalanobis method), estimate the effect of treatment on
 
 ```{r}
 
-reg_match <- 
-
-#summ(, model.fit = FALSE)
+reg_match <- lm(change_liberal ~ proposed_turbine_3km, data = matched_data)
+#colnames(matched_data)
+summ(reg_match, model.fit = FALSE)
 ```
 
-**2F.Q1** Have you identified a causal estimate using this approach: Why or why not?
+**2F.Q1** Have you identified a causal estimate using this approach: Why or why not?\*\* (is it causal if it is observational??)
 
-*Response:* \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_
+*Response:* Yes, there is a causal estimate using this approach, as the matched data best controls for the effect of the proposed turbine distance on the change in incumbent voter share (p \< .05) after having adjusted for the effect of the covariates in the original data set.
 
 **2F.Q2** When using a matching method, what is the main threat to causal identification?
 
-*Response:* \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_
+*Response:* It is important to consider that matching by itself does not directly resolve the selection on unobservables in the data; there may be underlying selection bias or additional confounding influence on the outcome excluded from the data.
+
+Matching alone does not solve the selection on unobservables problem
 
 **2F.Q3** Describe why the treatment estimate represents the `Average Treatment for the Treated (ATT)` and explain why this is the case relative to estimation of the `Average Treatment Effect (ATE)`.
 
-*Response:* \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_
+*Response:* \*\* Only the treatment group is considered in the regression of the change in incumbent voter share; the ATT would only observe those in the treatment group for this model (ie. precincts within 3 km of a wind turbine).
+
+Only looking at the effect of the controls on the treatment group from the subset
+
+ATE: entire population
+
+ATT: only those in treatment group are measures
 
 ------------------------------------------------------------------------
 
@@ -343,26 +383,28 @@ reg_match <-
 
 ```{r}
 
-panel_data <- 
+panel_data <- read.csv("data/Stokes15_panel_data.csv")
+panel_data <- panel_data %>% 
+    mutate(precinct_id = as.factor(precinct_id), year = as.factor(year)) 
 
 # HINT: Try running `tabyl(panel_data$year)`. Review article to make sense of the row numbers (n).
-
+tabyl(panel_data$year)
 ```
 
 **3A.Q1:** Why are there 18,558 rows in `panel_data`?
 
-*Response:* \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_
+*Response:* There are about 6,186 precincts per each year recorded (2003, 2007, and 2011), resulting in a total of 18,558 precincts recorded in the data set.
 
 ```{r}
 # How many years are included in the panel?
-
+length(unique(panel_data$year))
 # How many precincts are there?
-
+panel_data %>% group_by(year) %>% summarize(num_precinct = n())
 ```
 
 **3A.Q2:** How many unique precincts are *ever treated* (i.e., `proposed` & `operational`)?
 
-*Response:* \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_
+*Response:* There are 236 unique precincts that are ever treated.
 
 ```{r}
 
@@ -446,7 +488,7 @@ ggplot(aes(year, mean, color = status, group = status)) +
 
 **3B.Q1:** Write a short paragraph assessing the parallel trends assumption for each outcome.
 
-*Response (4-6 sentences):* \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_
+*Response (4-6 sentences):* \*\*\* Compare 2003-2007 and 2007-2011. In the pre-treatment period (2003-2007), there appears to be a parallel trend for operational tubines compared to no wind turbines in operation for the effect of the liberal party voter share. However, this parallel trend is not observed for prescincts for proposed turbines; there does not seem to be a significant relationship between proposed turbines and no turbines in prescincts on the liberal party voter share between 2003-2007. In the post-treatment period (2007-2011), there does not seem to be a parellel trend between operational turbines and no turbines on the liberal party voter share; the parallel trends assumption fail for the outcome. The similar pattern is observed for proposed turbines and no turbines in precincts following the post-treatment period. require more points....
 
 ------------------------------------------------------------------------
 
@@ -499,32 +541,38 @@ sample_40_precincts <- panel_data %>%
 #### **3C:** Estimate a fixed effects model using `lm()` with fixed effects added for `precinct` and `year` using the sample of 40 precincts just created.
 
 ```{r}
-model1_ff <- 
+model1_ff <- lm(perc_lib ~ proposed_turbine + precinct_id + year, data = sample_40_precincts)
 
-# summ(*** , model.fit = FALSE)
+model2_ff <- lm(perc_lib ~ operational_turbine + precinct_id + year, data = sample_40_precincts)
+
+summ(model = model1_ff, model.fit = F, robust = T)
+summ(model = model2_ff, model.fit = F, robust = T)
 ```
 
 ```{r}
-# summ(*** , model.fit = FALSE, [. . .])
+summ(model1_ff, model.fit = FALSE, digits = 3, robust = T)
+plot(model1_ff)
+
+
 ```
 
 **3C.Q1:** Intuition check: Is the *signal-to-noise* ratio for the treatment estimate greater than *2-to-1*?
 
-*Response:* \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_
+*Response:* The signal-to-noise ratio for the treatment estimate is less than the 2-to-1 estimate because the standard error is less than half of the distribution of the coefficient. (std\*2)\*\*
 
 > HINT: Add the argument `digits = 3` to the `summ()` function above
 
 **3C.Q2:** Re-run the `summ()` function using the *heteroscedasticiy robust standard error adjustment* (`robust = TRUE`). Did the standard error (S.E.) estimates change? Explain why.
 
-*Response:* \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_
+*Response:* The standard error estimates changed; the SE estimates increased from the original model. This is likely because the sampled data was assumed to have normally distributed residuals; however, repeated measurements within places can introduce correlated errors (\*\*).
 
 **3C.Q3:** Compare results of the model above to the findings from the fixed effects analysis in the Stokes (2015) study. Why might the results be similar or different?
 
-*Response:* \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_
+*Response:* .
 
 **3C.Q4:** In your own words, explain why it is advantageous from a causal inference perspective to include year and precinct fixed effects. Explain how between-level and within-level variance is relevant to the problem of omitted variable bias (OVB).
 
-*Response (2-4 sentences):* \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_
+*Response (2-4 sentences):* It is necessary to include `year` and `precinct` as fixed effects to account for differences in liberal voter share overtime as well as within precincts. The liberal voter share in precincts is not necessarily dependent on time; for example, precincts could become more or less liberal based on emigrating or immigrating to and from different precincts that change the demographics of the precinct, as well as motivational and personal decisions to change individual political affiliation. Between-level variance between precincts should be accounted for to account for time-invariant differences (ie. factors not dependent on time) for changes in the liberal voter share, resulting in remaining within-level differences that are time dependent. By adding `year` as a fixed effect to the model, time-variant differences from year to year in the liberal voter share can be better accounted for to prevent OVB in within-level variance; differences in time groups are better accounted for.
 
 ------------------------------------------------------------------------
 
@@ -534,16 +582,16 @@ See vignette here: [fixest walkthrough](https://cran.r-project.org/web/packages/
 
 ```{r}
 
-model2_ff <- 
+model2_ff <- feols(perc_lib ~ proposed_turbine | precinct_id + year, data = sample_40_precincts, cluster = ~precinct_id)
 
-summary()
+summary(model2_ff)
 ```
 
 **3D.Q1:** Interpret the model results and translate findings to be clear to an audience that may not have a background in causal inference (Econometrics) methods.
 
 In panel data settings, why is clustering by precinct important (i.e., `cluster = ~precinct_id`) ?”
 
-*Response (4-6 sentences):* \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_
+*Response (4-6 sentences):*
 
 ------------------------------------------------------------------------
 
