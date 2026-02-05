@@ -338,19 +338,11 @@ summ(reg_match, model.fit = FALSE)
 
 **2F.Q2** When using a matching method, what is the main threat to causal identification?
 
-*Response:* It is important to consider that matching by itself does not directly resolve the selection on unobservables in the data; there may be underlying selection bias or additional confounding influence on the outcome excluded from the data.
-
-Matching alone does not solve the selection on unobservables problem
+*Response:* The main threat to causal identification when using matching is selection on unobserables. While matching ensures that the treated and control groups are balanced on the observed covariates (ex. demographics and income in existing data), it will not account for hidden factors that the researcher(s) did not measure. For example, if people in turbine precincts were already more concerned about government intervention for reasons not explained or captured by the data, then the unobserved concern rather than the turbines could drive the change in vote share. As a result, matching only balances what is directly observable; any remaining unobserved differences can still bias the estimate of the causal effect.
 
 **2F.Q3** Describe why the treatment estimate represents the `Average Treatment for the Treated (ATT)` and explain why this is the case relative to estimation of the `Average Treatment Effect (ATE)`.
 
-*Response:* \*\* Only the treatment group is considered in the regression of the change in incumbent voter share; the ATT would only observe those in the treatment group for this model (ie. precincts within 3 km of a wind turbine).
-
-Only looking at the effect of the controls on the treatment group from the subset
-
-ATE: entire population
-
-ATT: only those in treatment group are measures
+*Response:* The treatment estimate represents the ATT because matching builds a comparison group that resembles the treated precincts and then estimates the effect of those precincts that actually received treatment. Essentially, the counterfactual outcome (ie. what would have occurred alternatively as observed in the control group) is built to reflect what would have happened to treated units had they not actually been treated. Contrarily, the ATE averages effects over the entire population (both treated and untreated) which requires modeling outcomes for units (ex. precincts) that may be very different from those with turbine projects.
 
 ------------------------------------------------------------------------
 
