@@ -157,7 +157,7 @@ match_data %>% select(proposed_turbine_3km, log_home_val_07, p_uni_degree, log_m
         by = proposed_turbine_3km, 
         statistic = list(
             all_continuous() ~ "{mean} ({sd})"
-          #  all_categorical() ~ "{n} ({p}%)"
+           # all_categorical() ~ "{n} ({p}%)"
         )
     ) %>% 
   modify_header(label ~ "**Covariate**") %>%
@@ -168,7 +168,7 @@ match_data %>% select(proposed_turbine_3km, log_home_val_07, p_uni_degree, log_m
 
 **2B.Q1** Summarize the table output: Which covariates look balanced/imbalanced?
 
-*Response:* The `log_pop_denc` appears to be the most imbalanced covariate. The `log_median_inc` seems to be the most balanced covariates between years, as well as `log_home_val_07` and `p_uni_degree` .
+*Response:* The `log_pop_denc` appears to be the most imbalanced covariate. The `log_median_inc` seems to be the most balanced covariate between years, as well as `log_home_val_07` and `p_uni_degree` .
 
 **2B.Q2** Describe in your own words why these covariates might be expected to confound the treatment estimate:
 
@@ -178,7 +178,7 @@ match_data %>% select(proposed_turbine_3km, log_home_val_07, p_uni_degree, log_m
 
 **2B.Q3** Intuition check: What type of data do you need to conduct a matching analysis?
 
-*Response:* A matching analysis would require at least significantly more observations for the control group compared to the treatment group, as well as pre-treatment covariates; covariates prior to the analysis are expected to influence the effect on the outcome (ie. the treated group).
+*Response:* A matching analysis requires observational data that include a treatment indicator, an outcome variable, and a set of pre-treatment covariates that influence both treatment assignment and the outcome. A sufficient and large pool of untreated observations is helpful such that treated units (precincts) can be matched to similar control units with comparable characteristics.
 
 ------------------------------------------------------------------------
 
@@ -261,7 +261,7 @@ love.plot(match_model, stats = "mean.diffs",
 
 **2D.Q1** Interpret the love plot in your own words:
 
-*Response:* The adjusted standardized mean differences are within the defined threshold in the love plot.
+*Response:* The love plot shows that the matching process was very successful in achieving a covariate balance. Prior to matching (pink), there are large differences between the treatment and control groups, especially between population density and university degree percentages. After matching (blue), the Std. Mean Diffs for all covariate variables shifted significantly toward zero and now fall within the threshold established by the dashed lines. The love plot indicates that the matched turbine and non-turbine precincts are now statistically similar across all these variables, allowing for a fairer comparison of the turbine's effect on voting.
 
 ------------------------------------------------------------------------
 
@@ -303,35 +303,23 @@ summary(propensity_scores)
 Use `bal.tab()` to report balance before and after matching.
 
 ```{r}
-
-
 new_names_propensity <- data.frame(
     old = c("log_home_val_07", "p_uni_degree", "log_median_inc", "log_pop_denc"),
     new = c("Home Value (log)", "Percent University Degree",
             "Median Income (log)", "Population Density (log)"))
 
+print("Propensity Score Adjusted Differences:")
 bal.tab(propensity_scores, 
         var.names = new_names_propensity) 
 
-
+print("Mahalanobis Adjusted Differences:")
 bal.tab(match_model, 
-        var.names = new_names) 
-
-# Love plot
-love.plot(match_model, stats = "mean.diffs",
-          thresholds = c(m = 0.1),
-          var.names = new_names)
-# Love plot
-love.plot(propensity_scores, stats = "mean.diffs",
-          thresholds = c(m = 0.1),
-          var.names = new_names_propensity)
-
-
+        var.names = new_names_propensity) 
 ```
 
 **2E.Q1** Compare Mahalanobis vs propensity score matching. Which method did a better job at achieving balance?
 
-*Response:* The match model is better because the standardized mean differences are closer to 0 within the defined interval.
+*Response:* The Mahalanobis distance matching analysis is better at achieving a balance because the adjust differences are moved closer to zero for most of the covariates. For example, the difference for `p_uni_degree` is significantly smaller under the Mahalanobis matching approach (-.006) compared to the propensity score matching (0.0457). The Mahalanobis approach also achieved a nearly perfect balance for `log_median_inc` with a difference of .0002. Essentially, the standardized mean differences under the Mahalanobis approach are closer to 0 within the narrower defined interval; the Mahalanobis approach is more precise in minimizing the gaps between the treated and control groups that enable more identical comparisons for the causal analysis.
 
 ------------------------------------------------------------------------
 
@@ -340,13 +328,11 @@ love.plot(propensity_scores, stats = "mean.diffs",
 Using the matched data (Mahalanobis method), estimate the effect of treatment on the change in incumbent vote share (`change_liberal`).
 
 ```{r}
-
 reg_match <- lm(change_liberal ~ proposed_turbine_3km, data = matched_data)
-#colnames(matched_data)
 summ(reg_match, model.fit = FALSE)
 ```
 
-**2F.Q1** Have you identified a causal estimate using this approach: Why or why not?\*\*
+**2F.Q1** Have you identified a causal estimate using this approach: Why or why not?
 
 *Response:* This approach identifies a causal estimate that is conditional on whether the matching method has properly balanced the covariates appropriately. The Mahalanobis matching method helps balance treated and control units on identified covariates, making the groups more comparable prior to estimating the effect of proposed turbine proximity on the change in incumbent vote share. Under the assumption that all relevant confounders (ie. `log_home_val_07, p_uni_degree, log_median_inc, log_pop_denc`) are observed and properly matched, the estimated statistically significant coefficient can be interpreted as a causal effect (p \< .05) .
 
