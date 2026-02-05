@@ -513,28 +513,22 @@ sample_40_precincts <- panel_data %>%
 #### **3C:** Estimate a fixed effects model using `lm()` with fixed effects added for `precinct` and `year` using the sample of 40 precincts just created.
 
 ```{r}
-model1_ff <- lm(perc_lib ~ proposed_turbine + precinct_id + year, data = sample_40_precincts)
+print("Unadjusted for heteroscedasity:")
+summ(model = model1_ff, model.fit = F, digits = 3)
 
-summ(model = model1_ff, model.fit = F, robust = T)
-
-```
-
-```{r}
-summ(model1_ff, model.fit = FALSE, digits = 3, robust = T)
-plot(model1_ff)
-
-
+print("Adjusted for heteroscedasity:")
+summ(model = model1_ff, model.fit = F, digits = 3, robust = T)
 ```
 
 **3C.Q1:** Intuition check: Is the *signal-to-noise* ratio for the treatment estimate greater than *2-to-1*?
 
-*Response:* The signal-to-noise ratio for the treatment estimate is less than the 2-to-1 estimate because the standard error is less than half of the distribution of the coefficient. (std\*2)\*\*
+*Response:* The signal-to-noise ratio for the treatment estimate is about 1.86, which is less than 2. The ratio is calculated as the estimate of coefficient divided by the standard error of the estimate (taken as the absolute value of −0.057/ 0.031).
 
 > HINT: Add the argument `digits = 3` to the `summ()` function above
 
 **3C.Q2:** Re-run the `summ()` function using the *heteroscedasticiy robust standard error adjustment* (`robust = TRUE`). Did the standard error (S.E.) estimates change? Explain why.
 
-*Response:* The standard error estimates changed; the SE estimates increased from the original model. This is likely because the sampled data was assumed to have normally distributed residuals; however, repeated measurements within places can introduce correlated errors (\*\*).
+*Response:* The standard error estimates changed; the standard error estimates increased from the original model. In particular, the standard error for the `proposed_turbine` coefficient increased from 0.031 to 0.039 and is now statistically significant (p \< .05). The robust standard errors relax the assumption of constant variance of errors and account for heteroskedasticity in the residuals. Because heteroskedasticity is likely present in the original model, the standard errors underestimated uncertainty while the robust adjustment provides more reliable (larger) standard errors.
 
 **3C.Q3:** Compare results of the model above to the findings from the fixed effects analysis in the Stokes (2015) study. Why might the results be similar or different?
 
