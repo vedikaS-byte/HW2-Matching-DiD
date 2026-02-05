@@ -85,11 +85,11 @@ library(scales) # plotting
 
 **1A.Q1** Summarize the environmental policy issue, the outcome of interest, and the intervention being evaluated. Be sure to include a brief description of each of the following key elements of the study: unit of analysis, outcome, treatment, comparison group):
 
-*Response:* \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_
+*Response:* In her 2015 analysis of Ontario’s Green Energy Act passed in 2009, Leah Stokes examines how local resistance to renewable energy infrastructure creates an environmental policy issue where concentrated local costs lead to "spatially distorted signaling" (Stokes, 2015, pg. 1). The study's intervention was the removal of local planning authority to fast track wind energy projects, creating a natural experiment where communities could not select out of receiving turbines (Stokes, pg. 2). The precinct was utilized as the primary unit of analysis, where Stokes evaluated the outcome of electoral/political punishment, which was measured by changes in the incumbent Liberal Party's voter share and voter turnout (Stokes, pg. 6). The treatment was defined as having an industrial-scale wind project (\> 10 megawatts) proposed or operational within a precinct (Stokes, pg. 7). The comparison group consisted of similar precincts without turbines within the same wind-resource heavy districts, analyzed using fixed effects and variable estimators to ensure that the results were not biased by the project siting (Stokes, pg. 1 and 3).
 
 **1A.Q2** Why might turbine proposals be correlated with baseline political preferences or rural areas? Provide 2 plausible mechanisms, and explain why that creates confounding.
 
-*Response:* \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_
+*Response:* Turbine proposal can be correlated with baseline political preferences and rural areas through two primary mechanisms: resource availability and strategic siting. First, developers may prioritize regions with the highest/fastest wind speeds which are naturally found in open rural landscapes more often than in urban areas. Second, rural areas can have lower property values and less political influence, so companies may target these areas to minimize legal and/or socioeconomic opposition. This creates confounding influence because these rural communities may already have been trending towards opposition parties due to economic and/or cultural factors. As a result, it is not entirely possible to know if a drop in the incumbents votes was actually caused by the wind turbines or if the turbines were placed in areas that were already planning to vote against the government; careful analysis is required to control for confounding influence on changes in the incumbent voter share.
 
 ------------------------------------------------------------------------
 
@@ -97,11 +97,11 @@ library(scales) # plotting
 
 **1B.Q1** What is the key identifying assumption for a fixed effects / Difference-in-Difference design? Explain how this assumption when satisfied provides evidence of causal effect:
 
-*Response:* \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_
+*Response:* The key identifying assumption for a fixed effects/Diff-in-Diff design is the parallel trends assumption which assumes that if the treatment (the wind turbines) had never occurred, then the treatment and control groups would have observed the same average change in their voting patterns over time. This assumption provides evidence for a causal effect by allowing the control group to serve as a "counterfactual" or what would have occurred to the treated precincts without the policy. When trends are parallel, any new gap that appears between the two groups after the turbines are introduced may be attributed specifically to the policy rather than on pre-existing differences or general political shifts within precincts.
 
 **1B.Q2** What is the reason for using a fixed effects approach from a causal inference perspective? Summarize within the context of study (in your own words).
 
-*Response:* \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_
+*Response:* A fixed effects approach is utilized to ensure a fair or apples-to-apples comparison by removing all permanent differences between locations (precincts) that could potentially bias the outcome (changes in incumbent voter shares). In this study, every precinct is unique; some precincts are naturally more conservative, more rural, or have differing local economies. If Stokes simply compared a wind turbine precinct to a non-wind turbine precinct, then it would not be clear if the difference in voting was caused by the turbine or by pre-existing characteristics such as baseline voting preferences or resource availability (ex. more access to higher wind speed). By using fixed effects, the study observes each precinct compared only to its own past effectively "cancelling out" everything that stays the same over time. This allows one to isolate the wind turbine as the specific cause of the electoral reaction rather than being misled by baseline local characteristics in each precinct.
 
 **1B.Q3** What part of the SUTVA assumption is most likely violated in the context of this study design (and why)?
 
@@ -155,7 +155,7 @@ match_data <- match_data %>% mutate(precinct_id = as.factor(precinct_id), distri
 ```{r}
 
 ## Create new data frame with only variables of interest
-wind_clean <- wind %>% select(proposed_turbine_3km, log_home_val_07, p_uni_degree, log_median_inc, log_pop_denc)
+wind_clean <- match_data %>% select(proposed_turbine_3km, log_home_val_07, p_uni_degree, log_median_inc, log_pop_denc)
 
 wind_clean %>% 
     tbl_summary(
@@ -173,11 +173,11 @@ wind_clean %>%
 
 **2B.Q1** Summarize the table output: Which covariates look balanced/imbalanced?
 
-*Response:* The `log_pop_denc` appears to be the most imbalanced covariate. The `log_median_inc` is the most balanced covariate between years; there is significant overlap in the distribution of precincts between the two groups.
+*Response:* The `log_pop_denc` appears to be the most imbalanced covariate. The `log_median_inc` seems to be the most balanced covariates between years, as well as `log_home_val_07` and `p_uni_degree` .
 
 **2B.Q2** Describe in your own words why these covariates might be expected to confound the treatment estimate:
 
-*Response (2-4 sentences):* \*\* More populated == more away bc do not want site disturbance??
+*Response (2-4 sentences):* Population density, education, income, and home value are all likely related to where wind turbine proposals occur and to political preferences. For example, less densely populated and lower income precincts may be more likely to host turbine proposals because land is cheaper. Additionally, these areas may differ in incumbent support compared to urban and/or wealthier precincts. Thus, it is important to control for these socioeconomic factors since differences in voter share could be incorrectly attributed to turbine proximity rather than underlying socioeconomic and demographic differences.
 
 ------------------------------------------------------------------------
 
@@ -351,9 +351,9 @@ reg_match <- lm(change_liberal ~ proposed_turbine_3km, data = matched_data)
 summ(reg_match, model.fit = FALSE)
 ```
 
-**2F.Q1** Have you identified a causal estimate using this approach: Why or why not?\*\* (is it causal if it is observational??)
+**2F.Q1** Have you identified a causal estimate using this approach: Why or why not?\*\*
 
-*Response:* Yes, there is a causal estimate using this approach, as the matched data best controls for the effect of the proposed turbine distance on the change in incumbent voter share (p \< .05) after having adjusted for the effect of the covariates in the original data set.
+*Response:* This approach identifies a causal estimate that is conditional on whether the matching method has properly balanced the covariates appropriately. The Mahalanobis matching method helps balance treated and control units on identified covariates, making the groups more comparable prior to estimating the effect of proposed turbine proximity on the change in incumbent vote share. Under the assumption that all relevant confounders (ie. `log_home_val_07, p_uni_degree, log_median_inc, log_pop_denc`) are observed and properly matched, the estimated statistically significant coefficient can be interpreted as a causal effect (p \< .05) .
 
 **2F.Q2** When using a matching method, what is the main threat to causal identification?
 
@@ -582,7 +582,9 @@ See vignette here: [fixest walkthrough](https://cran.r-project.org/web/packages/
 
 ```{r}
 
-model2_ff <- feols(perc_lib ~ proposed_turbine | precinct_id + year, data = sample_40_precincts, cluster = ~precinct_id)
+model2_ff <- feols(perc_lib ~ proposed_turbine | precinct_id + year, 
+                   data = sample_40_precincts, 
+                   cluster = ~precinct_id)
 
 summary(model2_ff)
 ```
@@ -592,6 +594,8 @@ summary(model2_ff)
 In panel data settings, why is clustering by precinct important (i.e., `cluster = ~precinct_id`) ?”
 
 *Response (4-6 sentences):*
+
+Repeated records of liberal voter share in individual precincts may be more similar to other precincts geographicaly each other than precincts grouped farther away.\*\*
 
 ------------------------------------------------------------------------
 
