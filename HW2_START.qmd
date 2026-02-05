@@ -105,15 +105,15 @@ library(scales) # plotting
 
 **1B.Q3** What part of the SUTVA assumption is most likely violated in the context of this study design (and why)?
 
-*Response:* \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_
+*Response:* In the context of this study, the part of the SUTVA assumption that is most likely violated is the "no interference" or "no spillover(s)" condition. This assumption requires that the treatment status of one unit (precinct) does not affect the outcome of another unit. However, wind turbines are large scale projects that can span or are visible across precinct boundaries. A voter living in a control precinct (without a turbine) could still live very close to a turbine located in an adjacent treated precinct. As a result, a voter in a control precinct could experience the same noise, visual impacts, or property value concerns in a neighboring precinct with a turbine. If people in the control precincts (without turbines) also vote against the government because they are impacted by turbines in a neighboring area, then the gap between the two groups shrinks. This makes the policy's impact look smaller than it actually is, causing the study to underestimate the true level of electoral backlash or punishment (the change in incumbent voter share is underestimated).
 
 **1B.Q4** Why does spillover matter when estimating an unbiased treatment effect?
 
-*Response:* \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_
+*Response:* Spillover matters because it contaminates the controlled or "clean" comparison between groups. In a perfect study, the control group should be completed unaffected by the policy implementation to show what would have happened naturally. If the effects spill over into the control group (ex. if neighbors without turbines also vote against the government), the control group is no longer an unbiased/neutral baseline. As a result, the two groups appear more alike than they actually are, shrinking the "gap" between them and leading the researcher(s) to underestimate the true impact of the policy.
 
 **1B.Q5** How do the authors assess the risk of spillovers, and what analytic choice do they make to attempt to mitigate the risk that spillover biases the causal estimate?
 
-*Response:* \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_
+*Response:* The author evaluates potential spillovers by examining how voting changes with distance from wind projects in 1 km increments and finds that negative effects on the government’s vote share persist up to at least 3 km away. To avoid bias, Stokes removes all precincts within 3 km of a turbine from the control group. This ensures that treated precincts are compared only to areas unlikely to be affected by turbine projects, preventing spillovers from making the policy appear weaker than it actually is.
 
 ------------------------------------------------------------------------
 
@@ -132,8 +132,6 @@ We will start by evaluating the 2007 survey (cross-sectional) data. Treatment is
 3.  Take a look at the data
 
 ```{r}
-# Set a seed for reproducible matching
-#set.seed(123)
 match_data <- read.csv("data/stokes15_survey2007.csv")
 
 match_data <- match_data %>% mutate(precinct_id = as.factor(precinct_id), district_id = as.factor(district_id))
