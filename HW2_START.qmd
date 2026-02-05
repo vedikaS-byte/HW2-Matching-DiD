@@ -522,17 +522,17 @@ summ(model = model1_ff, model.fit = F, digits = 3, robust = T)
 
 **3C.Q1:** Intuition check: Is the *signal-to-noise* ratio for the treatment estimate greater than *2-to-1*?
 
-*Response:* The signal-to-noise ratio for the treatment estimate is about 1.86, which is less than 2. The ratio is calculated as the estimate of coefficient divided by the standard error of the estimate (taken as the absolute value of −0.057/ 0.031).
+*Response:* The signal-to-noise ratio for the treatment estimate is about 1.86, which is less than 2. The ratio is calculated as the estimate of coefficient divided by the standard error of the estimate (taken as the absolute value of −0.057/0.031).
 
 > HINT: Add the argument `digits = 3` to the `summ()` function above
 
 **3C.Q2:** Re-run the `summ()` function using the *heteroscedasticiy robust standard error adjustment* (`robust = TRUE`). Did the standard error (S.E.) estimates change? Explain why.
 
-*Response:* The standard error estimates changed; the standard error estimates increased from the original model. In particular, the standard error for the `proposed_turbine` coefficient increased from 0.031 to 0.039 and is now statistically significant (p \< .05). The robust standard errors relax the assumption of constant variance of errors and account for heteroskedasticity in the residuals. Because heteroskedasticity is likely present in the original model, the standard errors underestimated uncertainty while the robust adjustment provides more reliable (larger) standard errors.
+*Response:* The standard error estimates changed; the standard error estimates increased from the original model. In particular, the standard error for the `proposed_turbine` coefficient increased from 0.031 to 0.039. The robust standard errors relax the assumption of constant variance of errors and account for heteroskedasticity in the residuals. Because heteroskedasticity is likely present in the original model, the standard errors underestimated uncertainty while the robust adjustment provides more reliable (larger) standard errors.
 
 **3C.Q3:** Compare results of the model above to the findings from the fixed effects analysis in the Stokes (2015) study. Why might the results be similar or different?
 
-*Response:* .
+*Response:* The 40-precinct model based on the 40-precinct sample are relatively consistent with the findings in the Stokes paper. Both analyses identified a negative treatment effect on the liberal party voter share, indicating that turbine proposals lead to a decrease in the incumbent party's vote share. However, the original study found this effect to be highly significant using a panel of several thousand observations (\~18,558 observations). The 40-precinct model is drawn on a much smaller number of observations (\~ 120 observations), suggesting that there may be high variability in the smaller sample size; there are larger standard errors in the smaller sample which increases the statistical noise and results in a insignificant p-value when adjusted for heteroskedasticity. Ultimately, the 40-precinct model captures a similar electoral backlash identified by Stokes, but the limited sample size makes the effect statistically insignificant.
 
 **3C.Q4:** In your own words, explain why it is advantageous from a causal inference perspective to include year and precinct fixed effects. Explain how between-level and within-level variance is relevant to the problem of omitted variable bias (OVB).
 
@@ -547,7 +547,7 @@ See vignette here: [fixest walkthrough](https://cran.r-project.org/web/packages/
 ```{r}
 
 model2_ff <- feols(perc_lib ~ proposed_turbine | precinct_id + year, 
-                   data = sample_40_precincts, 
+                   data = panel_data, 
                    cluster = ~precinct_id)
 
 summary(model2_ff)
