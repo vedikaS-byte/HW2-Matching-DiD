@@ -139,7 +139,7 @@ match_data <- match_data %>% mutate(precinct_id = as.factor(precinct_id), distri
 
 **2A.Q1** Intuition check: **Why match?** Explain rationale for using this method.
 
-*Response:* There is a mismatch in the number and size of the precincts between the surveyed years, so there must be a correct match that adjusts for this discrepancy between years.
+*Response:* The rationale for using matching is to address selection bias and ensure that the treated precincts (near wind turbine proposals) are directly comparable to control precincts. Turbine locations are not randomly assigned and are instead often placed in rural areas with specific geographic and political characteristics. Matching allows a researcher to pair each treated precinct with a control precinct that has nearly identical pre-treatment features (ex. past voting history or demographics). This enables a "balanced" dataset where the only significant difference between the two groups is the presence of a turbine proposal, allowing for a more accurate estimate of the policy's causal effect on the incumbent's vote share. From a logistical perspective, matching can also be used to adjust for differences in the number and size of precincts between survey years, helping account for these discrepancies over time.
 
 ------------------------------------------------------------------------
 
@@ -152,10 +152,7 @@ match_data <- match_data %>% mutate(precinct_id = as.factor(precinct_id), distri
 
 ```{r}
 
-## Create new data frame with only variables of interest
-wind_clean <- match_data %>% select(proposed_turbine_3km, log_home_val_07, p_uni_degree, log_median_inc, log_pop_denc)
-
-wind_clean %>% 
+match_data %>% select(proposed_turbine_3km, log_home_val_07, p_uni_degree, log_median_inc, log_pop_denc) %>% 
     tbl_summary(
         by = proposed_turbine_3km, 
         statistic = list(
