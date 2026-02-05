@@ -557,7 +557,7 @@ summary(model2_ff)
 
 In panel data settings, why is clustering by precinct important (i.e., `cluster = ~precinct_id`) ?”
 
-*Response (4-6 sentences):* The model results show that when a wind turbine project is proposed in a precinct, the incumbent party's vote share drops by about 4.2%. When controlling for the election year and the specific precinct, a wind turbine proposal in a precinct is shown to be a statistically significant predictor of the incumbent party's vote share; this effect is highly unlikely to be due to random chance alone (p \< .05). Essentially, electoral backlash appears to be real and significant; voters living near proposed turbine sites tend to punish the incumbent political party at the polls during an election year. It is important to cluster by precinct because observations from the same precinct across different years are not independent. Precincts tend to have persistent and relatively unchanged political tendencies, so errors can be correlated within the same precinct over time. As such, clustering accounts for this dependence and produces more reliable inference about the specific treatment effect; similar groups are organized together.
+*Response (4-6 sentences):* The model results show that when a wind turbine project is proposed in a precinct, the incumbent party's vote share drops by about 4.2% on average. When controlling for the election year and the specific precinct, a wind turbine proposal in a precinct is shown to be a statistically significant predictor of the incumbent party's vote share; this effect is highly unlikely to be due to random chance alone (p \< .05). Essentially, electoral backlash appears to be real and significant; voters living near proposed turbine sites tend to punish the incumbent political party at the polls during an election year. It is important to cluster by precinct because observations from the same precinct across different years are not independent. Precincts tend to have persistent and relatively unchanged political tendencies, so errors can be correlated within the same precinct over time. As such, clustering accounts for this dependence and produces more reliable inference about the specific treatment effect; similar groups are organized together.
 
 ------------------------------------------------------------------------
 
@@ -565,18 +565,21 @@ In panel data settings, why is clustering by precinct important (i.e., `cluster 
 
 ```{r}
 
-model3_ff <- 
+model3_ff <- feols(perc_lib ~ operational_turbine |
+                       precinct_id + year, 
+                   data = panel_data, 
+                   cluster = ~precinct_id)
 
-summary()
+summary(model3_ff)
 ```
 
 **3E.Q1:** Interpret the `model3_ff` results as clearly and **concisely** as you can.
 
-*Response:* \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_
+*Response:* The model results show that operational wind turbines have a significantly negative impact on the incumbent party's support (p \< .05). Essentially, when a turbine becomes operational within a precinct, then the liberal party's vote share decreases by about 9.3% on average when controlling for the effects of each individual precinct and the specific election year. Vote share seems to drop by a larger margin when turbines are actually operational in a precinct compared to a precinct with a proposed wind turbine project. However, it is important to consider that since this group failed the parallel trends assumption, the causal interpretation of the 9.2% drop in vote share should be treated with caution.
 
 **3E.Q2:** Why do you think the effect of proposed wind turbines is different from operational wind turbines. Develop your own theory about why incumbent vote share is affected in this way. Use the Stokes (2015) study to inform your response as needed.
 
-*Response:* \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_
+*Response:* The difference in results suggests that the political cost of wind energy increases as projects move from a mere proposal to an operational project. A proposed turbine is associated with a 4.2% drop in incumbent vote share, likely reflecting concerns about property values or perceptions that the government is unresponsive to local community opinions. Once a turbine is fully operational, the backlash becomes more pronounced; there is a 9.3% decline in vote share for the incumbent government. As consistent with Stokes's 2015 study, this pattern indicates a shift from residents opposing a hypothetical plan to experiencing the project's consequences that impact them daily (ex. noise pollution or aesthetic disruption), producing a stronger and more visceral/negative electoral response at the polls during election years.
 
 ------------------------------------------------------------------------
 
