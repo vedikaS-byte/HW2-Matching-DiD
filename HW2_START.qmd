@@ -536,7 +536,7 @@ summ(model = model1_ff, model.fit = F, digits = 3, robust = T)
 
 **3C.Q4:** In your own words, explain why it is advantageous from a causal inference perspective to include year and precinct fixed effects. Explain how between-level and within-level variance is relevant to the problem of omitted variable bias (OVB).
 
-*Response (2-4 sentences):* It is necessary to include `year` and `precinct` as fixed effects to account for differences in liberal voter share overtime as well as within precincts. The liberal voter share in precincts is not necessarily dependent on time; for example, precincts could become more or less liberal based on emigrating or immigrating to and from different precincts that change the demographics of the precinct, as well as motivational and personal decisions to change individual political affiliation. Between-level variance between precincts should be accounted for to account for time-invariant differences (ie. factors not dependent on time) for changes in the liberal voter share, resulting in remaining within-level differences that are time dependent. By adding `year` as a fixed effect to the model, time-variant differences from year to year in the liberal voter share can be better accounted for to prevent OVB in within-level variance; differences in time groups are better accounted for.
+*Response (2-4 sentences):* Including precinct fixed effects controls for all time-invariant differences between precincts (ex. baseline political, cultural, or geographic differences), while year fixed effects control for trends that affect all precincts in a given election year. This forces identification to come from within-precinct changes over time rather than differences across precincts. By removing between-precinct and time-level variation that may be correlated with both turbine siting and vote share, fixed effects reduce OVB and helps strengthen causal interpretation of the model.
 
 ------------------------------------------------------------------------
 
@@ -557,9 +557,7 @@ summary(model2_ff)
 
 In panel data settings, why is clustering by precinct important (i.e., `cluster = ~precinct_id`) ?”
 
-*Response (4-6 sentences):*
-
-Repeated records of liberal voter share in individual precincts may be more similar to other precincts geographicaly each other than precincts grouped farther away.\*\*
+*Response (4-6 sentences):* The model results show that when a wind turbine project is proposed in a precinct, the incumbent party's vote share drops by about 4.2%. When controlling for the election year and the specific precinct, a wind turbine proposal in a precinct is shown to be a statistically significant predictor of the incumbent party's vote share; this effect is highly unlikely to be due to random chance alone (p \< .05). Essentially, electoral backlash appears to be real and significant; voters living near proposed turbine sites tend to punish the incumbent political party at the polls during an election year. It is important to cluster by precinct because observations from the same precinct across different years are not independent. Precincts tend to have persistent and relatively unchanged political tendencies, so errors can be correlated within the same precinct over time. As such, clustering accounts for this dependence and produces more reliable inference about the specific treatment effect; similar groups are organized together.
 
 ------------------------------------------------------------------------
 
