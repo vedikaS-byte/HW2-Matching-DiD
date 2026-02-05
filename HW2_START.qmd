@@ -380,7 +380,6 @@ panel_data %>% group_by(year) %>% summarize(num_precinct = n())
 *Response:* There are 236 unique precincts that are ever treated.
 
 ```{r}
-
 panel_data %>%
   group_by(precinct_id) %>%
   summarise(
@@ -463,6 +462,8 @@ ggplot(aes(year, mean, color = status, group = status)) +
 
 *Response (4-6 sentences):* \*\*\* Compare 2003-2007 and 2007-2011. In the pre-treatment period (2003-2007), there appears to be a parallel trend for operational tubines compared to no wind turbines in operation for the effect of the liberal party voter share. However, this parallel trend is not observed for prescincts for proposed turbines; there does not seem to be a significant relationship between proposed turbines and no turbines in prescincts on the liberal party voter share between 2003-2007. In the post-treatment period (2007-2011), there does not seem to be a parellel trend between operational turbines and no turbines on the liberal party voter share; the parallel trends assumption fail for the outcome. The similar pattern is observed for proposed turbines and no turbines in precincts following the post-treatment period. require more points....
 
+The parallel trends assumption appears to hold well for the proposed turbines group but is violated for the operational turbines group. For proposed turbines, the treated and control precincts follow identical parallel paths between 2003 and 2007. In the operational group, however, the treated precincts were already declining at a steeper rate compared to the control group for changes in liberal voter share for that same period, indicating that both groups did not follow a parallel trajectory given the significant overlap. Between 2007 and 2011, the trends in liberal party vote share diverge in both groups as the treated precinncts show a steeper drop in vote share compared to the controls. This divergence after 2007 suggests that turbine projects (whether proposed or operational) cause significant electoral backlash or political punishment (ie. sharper drop in liberal party voter share) that the control groups did not experience.
+
 ------------------------------------------------------------------------
 
 ### Estimating Fixed Effects Models (DiD) for proposals
@@ -516,10 +517,8 @@ sample_40_precincts <- panel_data %>%
 ```{r}
 model1_ff <- lm(perc_lib ~ proposed_turbine + precinct_id + year, data = sample_40_precincts)
 
-model2_ff <- lm(perc_lib ~ operational_turbine + precinct_id + year, data = sample_40_precincts)
-
 summ(model = model1_ff, model.fit = F, robust = T)
-summ(model = model2_ff, model.fit = F, robust = T)
+
 ```
 
 ```{r}
